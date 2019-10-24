@@ -1,0 +1,31 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "This is a demo project for [Cordova and Phonegap AdMob plugin](https://github.com/appfeel/admob-google-cordova).",
+  "main": "index.js",
+  "dependencies": {
+    "cordova-admob": "file:../plugin",
+    "cordova-ios": "^5.0.1",
+    "cordova-libgoogleadmobads": "git+https://github.com/appfeel/google-iosadmobads.git",
+    "cordova-plugin-cocoapod-support": "^1.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appfeel/admob-google-demo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/appfeel/admob-google-demo/issues"
+  },
+  "homepage": "https://github.com/appfeel/admob-google-demo#readme",
+  "cordova": {
+    "plugins": {
+      "cordova-admob": {}
+    }
+  }
+}
