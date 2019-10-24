@@ -47,5 +47,9 @@
     <!-- iPad Spotlight and Settings Icon -->
     <icon src="res/ios/icon-Small-50.png" width="50" height="50" />
     <icon src="res/ios/icon-Small-50@2x.png" width="100" height="100" />
+
+    <config-file target="*-Info.plist" parent="GADApplicationIdentifier">
+      <string>ca-app-pub-8199842645940983~9374920234</string>
+    </config-file>
   </platform>
 </widget>
