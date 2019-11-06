@@ -9,6 +9,7 @@
   <access origin="*" />
   <preference name="LogLevel" value="VERBOSE"/>
   <preference name="debuggable" value="true"/>
+  <preference name="deployment-target" value="10.0"/>
   
   <icon src="res/appFeel-512.png" />
   
@@ -49,7 +50,11 @@
     <icon src="res/ios/icon-Small-50@2x.png" width="100" height="100" />
 
     <config-file target="*-Info.plist" parent="GADApplicationIdentifier">
-      <string>ca-app-pub-8199842645940983~9374920234</string>
+      <string>ca-app-pub-8736727451487566~1022347731</string>
     </config-file>
+    <pod name="GoogleMobileAdsMediationFacebook" />
+    <pod name="GoogleMobileAdsMediationTestSuite" />
+    <pod name="GoogleMobileAdsMediationMoPub" />
   </platform>
 </widget>
+

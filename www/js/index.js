@@ -26,6 +26,7 @@
 
 var app = {
     // global vars
+    admobReady: false,
     autoShowInterstitial: false,
     progressDialog: document.getElementById("progressDialog"),
     spinner: document.getElementById("spinner"),
@@ -38,49 +39,21 @@ var app = {
 
     // Application Constructor
     initialize: function () {
+        console.log('initialize()');
         if ((/(ipad|iphone|ipod|android)/i.test(navigator.userAgent))) {
-            document.addEventListener('deviceready', this.onDeviceReady, false);
+            document.addEventListener('deviceready', app.onDeviceReady, false);
         } else {
             app.onDeviceReady();
         }
     },
     // Must be called when deviceready is fired so AdMobAds plugin will be ready
     initAds: function () {
-        var isAndroid = (/(android)/i.test(navigator.userAgent));
-        var adPublisherIds = {
-            ios: {
-                banner: 'ca-app-pub-8199842645940983/9373537349',
-                interstitial: 'ca-app-pub-8199842645940983/5051148958'
-            },
-            android: {
-                banner: '',
-                interstitial: ''
-            }
-        };
-        var admobid;
-
-        if (isAndroid) {
-            admobid = adPublisherIds.android;
-        } else {
-            admobid = adPublisherIds.ios;
-        }
-        if (window.admob) {
-            admob.setOptions({
-                publisherId: admobid.banner,
-                interstitialAdId: admobid.interstitial,
-                bannerAtTop: true, // set to true, to put banner at top
-                overlap: false, // set to true, to allow banner overlap webview
-                offsetStatusBar: true, // set to true to avoid ios7 status bar overlap
-                isTesting: true, // receiving test ads (do not test with real ads as your account will be banned)
-                autoShowBanner: true, // auto show banners ad when loaded
-                autoShowInterstitial: false // auto show interstitials ad when loaded
-            });
-        } else {
-            alert('cordova-admob plugin not ready.\nAre you in a desktop browser? It won\'t work...');
-        }
+        console.log('initAds()');
+        app.setOptions();
     },
     // Bind Event Listeners
     bindAdEvents: function () {
+        console.log('bindAdEvents()');
         if (window.admob) {
             document.addEventListener("orientationchange", this.onOrientationChange, false);
             document.addEventListener(admob.events.onAdLoaded, this.onAdLoaded, false);
@@ -88,7 +61,7 @@ var app = {
             document.addEventListener(admob.events.onAdOpened, function (e) { }, false);
             document.addEventListener(admob.events.onAdClosed, function (e) { }, false);
             document.addEventListener(admob.events.onAdLeftApplication, function (e) { }, false);
-            document.addEventListener(admob.events.onInAppPurchaseRequested, function (e) { }, false);
+            // document.addEventListener(admob.events.onInAppPurchaseRequested, function (e) { }, false);
         } else {
             alert('cordova-admob plugin not ready.\nAre you in a desktop browser? It won\'t work...');
         }
@@ -99,9 +72,11 @@ var app = {
     // The scope of 'this' is the event.
     // -----------------------------------
     onOrientationChange: function () {
+        console.log('onOrientationChange()');
         app.onResize();
     },
     onDeviceReady: function () {
+        console.log('onDeviceReady()');
         var weinre,
             weinreUrl;
 
@@ -127,20 +102,23 @@ var app = {
         }
     },
     onAdLoaded: function (e) {
+        console.log('onAdLoaded()', JSON.stringify({ adType: e.adType, adapter: e.adapter }));
         app.showProgress(false);
         if (window.admob && e.adType === window.admob.AD_TYPE.INTERSTITIAL) {
             if (app.autoShowInterstitial) {
                 window.admob.showInterstitialAd();
             } else {
-                alert("Interstitial is available. Click on 'Show Interstitial' to show it.");
+                alert("Interstitial from " + e.adapter + " is available. Click on 'Show Interstitial' to show it.");
             }
         }
     },
     onAdFailedToLoad: function (e) {
+        console.log('onAdFailedToLoad()');
         app.showProgress(false);
         alert("Could not load ad: " + JSON.stringify(e));
     },
     onResize: function () {
+        console.log('onResize()');
         var msg = 'Web view size: ' + window.innerWidth + ' x ' + window.innerHeight;
         document.getElementById('sizeinfo').innerHTML = msg;
     },
@@ -149,7 +127,7 @@ var app = {
     // App buttons functionality
     // -----------------------------------
     startBannerAds: function () {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(true);
             window.admob.createBannerView(function () { }, function (e) {
                 alert(JSON.stringify(e));
@@ -159,7 +137,7 @@ var app = {
         }
     },
     removeBannerAds: function () {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(false);
             window.admob.destroyBannerView();
         } else {
@@ -167,7 +145,7 @@ var app = {
         }
     },
     showBannerAds: function () {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(false);
             window.admob.showBannerAd(true, function () { }, function (e) {
                 alert(JSON.stringify(e));
@@ -177,7 +155,7 @@ var app = {
         }
     },
     hideBannerAds: function () {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(false);
             window.admob.showBannerAd(false);
         } else {
@@ -185,7 +163,7 @@ var app = {
         }
     },
     requestInterstitial: function (autoshow) {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(true);
             app.autoShowInterstitial = autoshow;
             window.admob.requestInterstitialAd(function () { }, function (e) {
@@ -196,7 +174,7 @@ var app = {
         }
     },
     showInterstitial: function () {
-        if (window.admob) {
+        if (app.admobReady) {
             app.showProgress(false);
             window.admob.showInterstitialAd(function () { }, function (e) {
                 alert(JSON.stringify(e));
@@ -213,7 +191,44 @@ var app = {
             addClass(app.progressDialog, "hidden");
             removeClass(app.spinner, "animated");
         }
-    }
+    },
+    setOptions: function () {
+        var isAndroid = (/(android)/i.test(navigator.userAgent));
+        var adUnits = {
+            ios: {
+                banner: 'ca-app-pub-8736727451487566/8579007020',
+                interstitial: 'ca-app-pub-8736727451487566/6962673020'
+            },
+            android: {
+                banner: '',
+                interstitial: ''
+            }
+        };
+        var admobid;
+        if (isAndroid) {
+            admobid = adUnits.android;
+        } else {
+            admobid = adUnits.ios;
+        }
+        if (window.admob) {
+            admob.setOptions({
+                publisherId: admobid.banner,
+                interstitialAdId: admobid.interstitial,
+                bannerAtTop: true, // set to true, to put banner at top
+                overlap: false, // set to true, to allow banner overlap webview
+                offsetStatusBar: true, // set to true to avoid ios7 status bar overlap
+                // isTesting: true, // receiving test ads (do not test with real ads as your account will be banned)
+                autoShowBanner: false, // auto show banners ad when loaded
+                autoShowInterstitial: false, // auto show interstitials ad when loaded
+                mopubAdUnitId: '23ac5475897343f5a1bf4b04fb53e86f',
+            }, function() {
+              console.log('admob ready');
+              app.admobReady = true;
+            });
+        } else {
+            alert('cordova-admob plugin not ready.\nAre you in a desktop browser? It won\'t work...');
+        }
+    },
 };
 
 function removeClass(elem, cls) {
